@@ -97,6 +97,11 @@ body {
   padding: 20px;
 }
 
+.textWrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
 .smallTitle {
   font-size: 15px;
   margin-bottom: 20px;

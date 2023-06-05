@@ -26,6 +26,7 @@ import { useCookies } from "react-cookie";
 import { Navigate, useNavigate } from "react-router-dom";
 import StyledModal from "../components/common/Modal.js";
 import { genComponentStyleHook } from "antd/es/theme/internal.js";
+import { NoStyleItemContext } from "antd/es/form/context.js";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -335,7 +336,9 @@ const Application = () => {
             <div className={styles.gutter16}>
               <div className={styles.flexWrapper}>
                 <div className={styles.contentWrapper}>
-                  <h3 className={styles.smallTitle}>종합강의시간표목록</h3>
+                  <div className={styles.contentWrapper}>
+                    <h3 className={styles.smallTitle}>종합강의시간표목록</h3>
+                  </div>
                   <Table
                     components={{
                       body: {

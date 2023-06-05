@@ -174,6 +174,7 @@ const StyledTimeTable = ({
 export default StyledTimeTable;
 
 function transformDataToEvents(data) {
+  console.log("데이터는:", data);
   const events = {
     월: [],
     화: [],

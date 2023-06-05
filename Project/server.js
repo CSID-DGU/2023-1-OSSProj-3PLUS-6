@@ -52,6 +52,7 @@ app.post("/signup", async (req, res) => {
   const userCollectionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     lectureIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Lecture" }], // 여러 강의 ID를 저장하기 위해 배열로 변경
+    count: { type: Number, default: 24 }, // count 변수 추가
   });
 
   // UserCollection 모델 생성
@@ -81,6 +82,7 @@ app.post("/signup", async (req, res) => {
         {
           _id: mongoose.Types.ObjectId(userInfo._id),
           lectureIds: [],
+          count: 24, // count 변수 추가 및 기본값 설정
         },
         (err) => {
           if (err) {
@@ -228,19 +230,8 @@ app.get("/application/seclectedCourse", auth, async (req, res) => {
       _id: mongoose.Types.ObjectId(userId),
     });
 
-    // 강의 ID들을 배열로 받아옴
-    const lectureIds = userCourseInfo.lectureIds;
-
-    // 각각의 강의 정보를 가져오는 비동기 함수들의 배열 생성
-    const getLectureInfoPromises = lectureIds.map((lectureId) =>
-      Lecture.findById(lectureId)
-    );
-
-    // Promise.all을 이용하여 모든 강의 정보를 한 번에 가져옴
-    const lectureInfos = await Promise.all(getLectureInfoPromises);
-
-    // 모든 강의 정보를 반환
-    res.status(200).json(lectureInfos);
+    // 사용자의 강의 정보 반환
+    res.status(200).json(userCourseInfo.lectureIds);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: "Internal server error" });
@@ -316,9 +307,23 @@ app.post("/application/add", auth, async (req, res) => {
         .json({ success: false, message: "이미 추가된 강의입니다." });
     }
 
+    // 유저 고유의 컬렉션 내의 학점 정보 count를 받아오는 변수를 선언한다.
+    const userData = await userCollection.findOne({
+      _id: mongoose.Types.ObjectId(userId),
+    });
+    let count = userData.count;
+
+    // 신청한 강의의 lectureID를 기반으로 lecture 컬렉션에서 해당 강의의 학점을 받아온다.
+    const lecture = await Lecture.findById(selectLectureId);
+    const credit = lecture.학점;
+
+    // 신청한 강의의 학점만큼 count 변수에서 차감하여 유저 고유의 컬렉션을 저장한다.
+    count -= credit;
+    console.log("사용자의 학점은:", count);
+
     const result = await userCollection.updateOne(
       { _id: mongoose.Types.ObjectId(userId) },
-      { $push: { lectureIds: selectLectureId } }
+      { $push: { lectureIds: selectLectureId }, $set: { count: count } }
     );
 
     if (result.modifiedCount === 0) {
@@ -326,9 +331,11 @@ app.post("/application/add", auth, async (req, res) => {
         .status(400)
         .json({ success: false, message: "강의 추가에 실패했습니다." });
     }
-    res
-      .status(200)
-      .json({ success: true, message: "강의 추가에 성공했습니다." });
+    res.status(200).json({
+      success: true,
+      message: "강의 추가에 성공했습니다.",
+      count: count,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: "Internal server error" });
@@ -339,6 +346,7 @@ app.delete("/application/delete", auth, async (req, res) => {
   try {
     const selectLectureId = req.body.lectureId;
     const userToken = req.body.userToken;
+
     const userInfo = await new Promise((resolve, reject) => {
       user.findByToken(userToken, (err, userInfo) => {
         if (err) {
@@ -355,9 +363,22 @@ app.delete("/application/delete", auth, async (req, res) => {
     const userCollection =
       mongoose.connection.db.collection(userCollectionName);
 
+    // 유저 고유의 컬렉션 내의 학점 정보 count를 받아오는 변수를 선언한다.
+    const userData = await userCollection.findOne({
+      _id: mongoose.Types.ObjectId(userId),
+    });
+    let count = userData.count;
+
+    // 신청한 강의의 lectureID를 기반으로 lecture 컬렉션에서 해당 강의의 학점을 받아온다.
+    const lecture = await Lecture.findById(selectLectureId);
+    const credit = lecture.학점;
+
+    // 신청한 강의의 학점만큼 count 변수에서 차감하여 유저 고유의 컬렉션을 저장한다.
+    count += credit;
+
     const result = await userCollection.updateOne(
       { _id: mongoose.Types.ObjectId(userId) },
-      { $pull: { lectureIds: selectLectureId } }
+      { $pull: { lectureIds: selectLectureId }, $set: { count: count } }
     );
 
     if (result.modifiedCount === 0) {
@@ -366,9 +387,12 @@ app.delete("/application/delete", auth, async (req, res) => {
         .json({ success: false, message: "강의 삭제에 실패했습니다." });
     }
 
-    res
-      .status(200)
-      .json({ success: true, message: "강의 삭제에 성공했습니다." });
+    res.status(200).json({
+      success: true,
+      message: "강의 삭제에 성공했습니다.",
+      count: count,
+    });
+    console.log("사용자의 학점은:", count);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: "Internal server error" });
