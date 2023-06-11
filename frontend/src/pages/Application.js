@@ -454,7 +454,11 @@ const Application = () => {
                     })}
                   />
                 </div>
-                <div className="container">
+                <div className="container"  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignContent: "center",
+                  }}>
                   <div className={styles.button_wrapper}>
                     <Button shape="circle" onClick={handleAddButtonClick}>
                       +
