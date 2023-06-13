@@ -1,4 +1,0 @@
-#!/usr/bin/env node
-./Project/node_modules
-./Project/react-web/node_modules
-./Project/react-web/package-lock.json
