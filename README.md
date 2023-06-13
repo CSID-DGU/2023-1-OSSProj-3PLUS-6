@@ -20,7 +20,7 @@
 ## 02. 기능
 본 프로젝트는 크게 유저, 강의 검색, 강의 신청, 강의 조회, 강의 삭제 등 다섯가지 기능을 제공합니다.
 
-![enter image description here](https://lh3.google.com/u/0/d/1FGqiDAJfqJE8eDa1WPgOfF3F76PVFPGA=w2500-h1669-iv1)
+![기능화면](https://lh3.google.com/u/0/d/1FGqiDAJfqJE8eDa1WPgOfF3F76PVFPGA=w2500-h1669-iv1)
  
  - 유저 
 	 - 회원가입
